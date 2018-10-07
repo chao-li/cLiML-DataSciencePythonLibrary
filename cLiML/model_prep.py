@@ -1,3 +1,15 @@
+def match_test_to_train_columns(df_test, df_train):
+    columns_missing = set(df_train.columns) - set(df_test.columns)
+    
+    for col in columns_missing:
+        df_test[col] = 0
+    
+    df_test = df_test[df_train.columns]
+    return df_test
+
+
+
+
 def feature_select_linear_reg(X, y, cv = 10):
     import pandas as pd
     import numpy as np
@@ -92,5 +104,47 @@ def __dummy(df, category):
     # get the name of the last column in dummies, and delete the last column of dummified variable
     del_col = dummy.columns.values.tolist()[-1]
     df.drop(columns = [del_col], inplace = True)
+    
+    return df
+
+
+
+def dummify_test(df, categorical_var = None):
+    import numpy as np
+    
+    if categorical_var != None:
+        # loop through each categorical variable
+        for category in categorical_var:
+            # dummify this category
+            df = __dummy_test(df, category)
+
+        return df
+    else:
+        variables = df.columns.values.tolist()
+        
+        cate_vars = []
+        for var in variables:
+            if np.issubdtype(df[var].dtype, np.number) == False:
+                cate_vars.append(var)
+        
+        
+        for category in cate_vars:
+            # dummify this category
+            df = __dummy_test(df, category)
+            
+        return df
+        
+        
+     
+def __dummy_test(df, category):
+    import pandas as pd
+    # dummify the categorical variable
+    dummy = pd.get_dummies(df[category], prefix = str(category))
+
+    # concatenate this to the original dataframe
+    df = pd.concat([df, dummy], axis = 1)
+
+    # delete the original categorical variable, 
+    df.drop(columns = [category], inplace = True)
     
     return df
